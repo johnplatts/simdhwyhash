@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: libsimdhwyhash
+Description: Implementation of HighwayHash that uses Google Highway SIMD library
+Version: @SIMDHWYHASH_LIBRARY_VERSION@
+Requires.private: @SIMDHWYHASH_PKGCONFIG_REQUIRES_PRIVATE@
+Libs: -L${libdir} -lsimdhwyhash @SIMDHWYHASH_PKGCONFIG_EXTRA_LIBS@
+Cflags: -I${includedir} -D@DLLEXPORT_TO_DEFINE@

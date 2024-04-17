@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(highway-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(highway
+  GIT_REPOSITORY    https://github.com/google/highway.git
+  GIT_TAG           41f43ce3be678995091e95c1932f6ad986a399d3
+  SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/highway-src"
+  BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/highway-build"
+  PREFIX            "${CMAKE_CURRENT_BINARY_DIR}/highway-prefix"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND     ""
+  INSTALL_COMMAND   ""
+  TEST_COMMAND      ""
+)
