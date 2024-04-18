@@ -304,6 +304,8 @@ set_target_properties(simdhwyhash PROPERTIES PUBLIC_HEADER "${SIMDHWYHASH_INCLUD
 
 set(SIMDHWYHASH_SYSTEM_HIGHWAY OFF CACHE BOOL "Use pre-installed highway?")
 
+get_property(SIMDHWYHASH_IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
 include(ExternalProject)
 
 if(SIMDHWYHASH_SYSTEM_HIGHWAY)
@@ -334,14 +336,20 @@ else()
   list(APPEND SIMDHWYHASH_HWY_BUILD_CXX_FLAGS ${SIMDHWYHASH_HWY_CXX_FLAGS})
   string(REPLACE ";" " " SIMDHWYHASH_HWY_BUILD_CXX_FLAGS "${SIMDHWYHASH_HWY_BUILD_CXX_FLAGS}")
 
-  set(SIMDHWYHASH_HWY_LIB_PATH
-    "${CMAKE_CURRENT_BINARY_DIR}/highway-build/${CMAKE_STATIC_LIBRARY_PREFIX}hwy${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  set(SIMDHWYHASH_HWY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/highway-build")
+  set(SIMDHWYHASH_HWY_LIB_FILENAME "${CMAKE_STATIC_LIBRARY_PREFIX}hwy${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+  if(SIMDHWYHASH_IS_MULTICONFIG)
+    set(SIMDHWYHASH_HWY_LIB_PATH "${SIMDHWYHASH_HWY_BUILD_DIR}/$<CONFIG>/${SIMDHWYHASH_HWY_LIB_FILENAME}")
+  else()
+    set(SIMDHWYHASH_HWY_LIB_PATH "${SIMDHWYHASH_HWY_BUILD_DIR}/${SIMDHWYHASH_HWY_LIB_FILENAME}")
+  endif()
 
   set(SIMDHWYHASH_HWY_CMAKE_ARGS "")
   foreach (var_name IN ITEMS CMAKE_C_COMPILER CMAKE_CXX_COMPILER
            CMAKE_C_COMPILER_TARGET CMAKE_CXX_COMPILER_TARGET
-           CMAKE_CROSSCOMPILING_EMULATOR CMAKE_BUILD_TYPE CMAKE_CXX_STANDARD
-           HWY_CMAKE_ARM7 HWY_CMAKE_SSE2 HWY_CMAKE_RVV)
+           CMAKE_CROSSCOMPILING_EMULATOR CMAKE_BUILD_TYPE CMAKE_TOOLCHAIN_FILE
+           CMAKE_CXX_STANDARD HWY_CMAKE_ARM7 HWY_CMAKE_SSE2 HWY_CMAKE_RVV)
     if(DEFINED ${var_name})
       string(REPLACE ";" "^^" simdhwyhash_hwy_cmake_arg "${${var_name}}")
       list (APPEND SIMDHWYHASH_HWY_CMAKE_ARGS "-D${var_name}=${simdhwyhash_hwy_cmake_arg}")
@@ -359,19 +367,31 @@ else()
   ExternalProject_Add(highway
     LIST_SEPARATOR   ^^
     SOURCE_DIR       "${CMAKE_CURRENT_BINARY_DIR}/highway-src"
-    BINARY_DIR       "${CMAKE_CURRENT_BINARY_DIR}/highway-build"
+    BINARY_DIR       "${SIMDHWYHASH_HWY_BUILD_DIR}"
     PREFIX           "${CMAKE_CURRENT_BINARY_DIR}/highway-prefix"
     INSTALL_COMMAND  ""
     TEST_COMMAND     ""
     CMAKE_ARGS       ${SIMDHWYHASH_HWY_CMAKE_ARGS}
     BUILD_BYPRODUCTS ${SIMDHWYHASH_HWY_LIB_PATH})
-    add_library(highway-lib STATIC IMPORTED)
-    add_dependencies(highway-lib highway)
+
+  add_library(highway-lib STATIC IMPORTED)
+  add_dependencies(highway-lib highway)
+
+  if(SIMDHWYHASH_IS_MULTICONFIG)
+    foreach(output_config IN ITEMS ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
+      string(TOUPPER ${output_config} uppercase_output_config)
+      set_target_properties(highway-lib
+         PROPERTIES IMPORTED_LOCATION_${uppercase_output_config}
+         "${SIMDHWYHASH_HWY_BUILD_DIR}/${output_config}/${SIMDHWYHASH_HWY_LIB_FILENAME}")
+    endforeach()
+  else()
     set_target_properties(highway-lib
        PROPERTIES IMPORTED_LOCATION ${SIMDHWYHASH_HWY_LIB_PATH}
     )
-    set_target_properties(highway-lib
-      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/highway-src")
+  endif()
+
+  set_target_properties(highway-lib
+    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}/highway-src")
 
   add_dependencies(simdhwyhash highway)
   set(SIMDHWYHASH_HWY_LIBS "highway-lib")
@@ -462,6 +482,7 @@ else()
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests)
+
 foreach (TESTFILE IN LISTS SIMDHWYHASH_TEST_FILES)
   # The TESTNAME is the name without the extension or directory.
   get_filename_component(TESTNAME ${TESTFILE} NAME_WE)
