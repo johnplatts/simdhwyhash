@@ -28,7 +28,7 @@ other than C++.
 - `void SimdHwyHash_Reset(SimdHwyHashState* state, const uint64_t* key)` -
 initializes `state` using `key` (which is an array of 4 uint64_t values)
 
-- `void SimdHwyHash_Update(SimdHwyHashState* state, const void* ptr, size_t 
+- `void SimdHwyHash_Update(SimdHwyHashState* state, const void* ptr, size_t
 byte_len)` - updates `state` with `byte_len` bytes from `ptr`
 
   `state` must be initialized using `SimdHwyHash_Reset` prior to the first
@@ -36,7 +36,7 @@ byte_len)` - updates `state` with `byte_len` bytes from `ptr`
 
   If `state` is going to be updated with additional data, `byte_len` should be
   a multiple of 32. Otherwise, if this is the final `SimdHwyHash_Update` step,
-  byte_len should be equal to the length of the remaining data.
+  `byte_len` should be equal to the length of the remaining data.
 
 - `uint64_t SimdHwyHash_Finalize64(SimdHwyHashState* state)` - returns the
 64-bit hash of the data
