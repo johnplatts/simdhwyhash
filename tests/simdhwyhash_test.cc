@@ -164,7 +164,7 @@ static inline void HwyHashFinalize256(
       state->v0[3] + state->mul0[3], state->v0[2] + state->mul0[2], hash);
 }
 
-static inline void ComputeExpectedHwyHashExpectedHash128(
+static inline void ComputeExpectedHwyHash128(
     const void* SIMDHWYHASH_RESTRICT ptr, size_t byte_len,
     const uint64_t* SIMDHWYHASH_RESTRICT key, uint64_t (&hash)[2]) {
   SimdHwyHashState state;
@@ -173,7 +173,7 @@ static inline void ComputeExpectedHwyHashExpectedHash128(
   HwyHashFinalize128(&state, hash);
 }
 
-static inline void ComputeExpectedHwyHashExpectedHash256(
+static inline void ComputeExpectedHwyHash256(
     const void* SIMDHWYHASH_RESTRICT ptr, size_t byte_len,
     const uint64_t* SIMDHWYHASH_RESTRICT key, uint64_t (&hash)[4]) {
   SimdHwyHashState state;
@@ -196,7 +196,7 @@ TEST(SimdHwyHashTest, TestHash128) {
   uint64_t actual_hash[2];
 
   for (size_t i = 0; i <= 64; i++) {
-    ComputeExpectedHwyHashExpectedHash128(kData, i, kKey, expected_hash);
+    ComputeExpectedHwyHash128(kData, i, kKey, expected_hash);
     SimdHwyHash_Hash128(kData, i, kKey, actual_hash);
     EXPECT_EQ(actual_hash[0], expected_hash[0]);
     EXPECT_EQ(actual_hash[1], expected_hash[1]);
@@ -217,7 +217,7 @@ TEST(SimdHwyHashTest, TestHash256) {
   uint64_t actual_hash[4];
 
   for (size_t i = 0; i <= 64; i++) {
-    ComputeExpectedHwyHashExpectedHash256(kData, i, kKey, expected_hash);
+    ComputeExpectedHwyHash256(kData, i, kKey, expected_hash);
     SimdHwyHash_Hash256(kData, i, kKey, actual_hash);
     EXPECT_EQ(actual_hash[0], expected_hash[0]);
     EXPECT_EQ(actual_hash[1], expected_hash[1]);
