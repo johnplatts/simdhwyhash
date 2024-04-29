@@ -42,7 +42,7 @@ set(LIBRARY_VERSION "${simdhwyhash_VERSION}")
 set(LIBRARY_SOVERSION ${simdhwyhash_VERSION_MAJOR})
 
 if(CMAKE_CXX_STANDARD)
-  if(CMAKE_CXX_STANDARD LESS 17)
+  if(CMAKE_CXX_STANDARD LESS 17 OR CMAKE_CXX_STANDARD GREATER_EQUAL 98)
     message(FATAL_ERROR "CMAKE_CXX_STANDARD is less than 17, simdhwyhash requires C++17 or later")
   endif()
 else()
