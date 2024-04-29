@@ -338,6 +338,8 @@ endif()
 
 include(CMakePushCheckState)
 
+# Check to see if Google Highway can be used in a header-only manner
+
 cmake_push_check_state()
 string(REPLACE ";" " " SIMDHWYHASH_HWY_CHECK_CXX_FLAGS "${SIMDHWYHASH_HWY_CXX_FLAGS}")
 set(CMAKE_REQUIRED_FLAGS "${SIMDHWYHASH_HWY_CHECK_CXX_FLAGS}")
@@ -352,6 +354,8 @@ check_cxx_source_compiles(
     #include \"hwy/highway.h\"
 
     namespace simdhwyhash_test {
+
+    HWY_BEFORE_NAMESPACE();
     namespace HWY_NAMESPACE {
     namespace {
 
@@ -360,10 +364,11 @@ check_cxx_source_compiles(
 
       const hn::ScalableTag<uint32_t> d;
       return hn::GetLane(hn::SumOfLanes(d, hn::Iota(d, val)));
-      }
+    }
 
     }  // namespace
     }  // namespace HWY_NAMESPACE
+    HWY_AFTER_NAMESPACE();
 
     #if HWY_ONCE
     namespace {
@@ -372,6 +377,7 @@ check_cxx_source_compiles(
     #endif  // HWY_ONCE
     }  // namespace simdhwyhash_test
 
+    #if HWY_ONCE
     static inline uint32_t InvokeSimdHwyHashDispatchTestFunc() {
       using namespace simdhwyhash_test;
       return HWY_DYNAMIC_DISPATCH(SimdHwyHashDispatchTestFunc)(uint32_t{1});
@@ -380,8 +386,10 @@ check_cxx_source_compiles(
     int main() {
       InvokeSimdHwyHashDispatchTestFunc();
       return 0;
-    }"
-  SIMDHWYHASH_HWY_HAVE_HEADER_ONLY
+    }
+    #endif  // HWY_ONCE
+   "
+   SIMDHWYHASH_HWY_HAVE_HEADER_ONLY
 )
 cmake_pop_check_state()
 
